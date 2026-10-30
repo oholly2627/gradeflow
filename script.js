@@ -82,7 +82,7 @@ function renderPerformance() {
   const body = $("#performance-table");
   body.innerHTML = data.students.slice(0, 5).map((student, index) => {
     const score = average(student.id); const [status, statusClass] = statusFor(score);
-    return `<tr><td><div class="student-cell"><span class="student-avatar ${index % 3 === 1 ? "alt" : index % 3 === 2 ? "green-alt" : ""}">${initials(student.name)}</span>${student.name}</div></td><td>${student.className}</td><td><span class="score">${score === null ? "—" : `${score}%`}</span>${score !== null ? `<span class="score-bar ${score < 70 ? "low" : score < 85 ? "medium" : ""}"><i style="width:${score}%"></i></span>` : ""}</td><td><span class="status-pill ${statusClass}">${status}</span></td></tr>`;
+    return `<tr><td><div class="student-cell"><span class="student-avatar ${index % 3 === 1 ? "alt" : index % 3 === 2 ? "green-alt" : ""}">${initials(student.name)}</span>${student.name}</div></td><td><span class="score">${score === null ? "—" : `${score}%`}</span>${score !== null ? `<span class="score-bar ${score < 70 ? "low" : score < 85 ? "medium" : ""}"><i style="width:${score}%"></i></span>` : ""}</td><td><span class="status-pill ${statusClass}">${status}</span></td></tr>`;
   }).join("");
   $("#performance-empty").classList.toggle("hidden", data.students.length > 0);
 }
@@ -98,7 +98,7 @@ function renderActivity() {
 function renderStudents() {
   const search = ($("#student-search")?.value || "").toLowerCase(); const classFilter = $("#class-filter")?.value || "all";
   const students = data.students.filter((student) => `${student.name} ${student.email} ${(student.classes || [student.className]).join(" ")}`.toLowerCase().includes(search) && (classFilter === "all" || (student.classes || [student.className]).includes(classFilter)));
-  $("#students-table").innerHTML = students.map((student, index) => { const score = average(student.id); const classes = student.classes || [student.className]; return `<tr><td><button class="student-link" data-edit-student="${student.id}"><div class="student-cell"><span class="student-avatar ${index % 2 ? "alt" : ""}">${initials(student.name)}</span>${student.name}</div></button></td><td>${classes.join(", ")}</td><td>${student.email || "—"}</td><td class="score">${score === null ? "—" : `${score}%`}</td><td>${formatDate(data.grades.filter((grade) => grade.studentId === student.id).sort((a, b) => b.date.localeCompare(a.date))[0]?.date || student.createdAt)}</td><td><button class="action-menu delete-student" data-id="${student.id}" title="Remove student">···</button></td></tr>`; }).join("");
+  $("#students-table").innerHTML = students.map((student, index) => { const score = average(student.id); return `<tr><td><button class="student-link" data-edit-student="${student.id}"><div class="student-cell"><span class="student-avatar ${index % 2 ? "alt" : ""}">${initials(student.name)}</span>${student.name}</div></button></td><td>${student.email || "—"}</td><td class="score">${score === null ? "—" : `${score}%`}</td><td>${formatDate(data.grades.filter((grade) => grade.studentId === student.id).sort((a, b) => b.date.localeCompare(a.date))[0]?.date || student.createdAt)}</td><td><button class="action-menu delete-student" data-id="${student.id}" title="Remove student">···</button></td></tr>`; }).join("");
   $("#students-empty").classList.toggle("hidden", students.length > 0);
 }
 function renderFilters() {
