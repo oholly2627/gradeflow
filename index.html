@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A simple, private gradebook for tracking student progress.">
+  <title>GradeFlow | Student gradebook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="GradeFlow home">
+        <span class="brand-mark">G</span>
+        <span>Grade<span class="brand-accent">Flow</span></span>
+      </a>
+      <p class="sidebar-label">Workspace</p>
+      <nav class="nav-list" aria-label="Main navigation">
+        <button class="nav-item active" data-view="overview"><span class="nav-icon">▦</span> Overview</button>
+        <button class="nav-item" data-view="students"><span class="nav-icon">♙</span> Students</button>
+        <button class="nav-item" data-view="subjects"><span class="nav-icon">◈</span> Subjects</button>
+        <button class="nav-item" data-view="assignments"><span class="nav-icon">✓</span> Assignments</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="privacy-note">
+          <span class="shield-icon">✦</span>
+          <div><strong>Private by design</strong><small>Your data stays in this browser.</small></div>
+        </div>
+        <button class="nav-item settings-button" data-view="settings"><span class="nav-icon">⚙</span> Settings</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="mobile-brand"><span class="brand-mark">G</span> Grade<span class="brand-accent">Flow</span></div>
+        <div class="topbar-actions">
+          <button class="icon-button" id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">☼</button>
+          <button class="avatar" title="Teacher profile">AH</button>
+        </div>
+      </header>
+
+      <section id="overview-view" class="view-panel">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">Monday, October 23, 2026</p>
+            <h1>Good morning, Alex <span class="wave">✦</span></h1>
+            <p class="muted">Here’s how your classes are progressing.</p>
+          </div>
+          <button class="primary-button" id="quick-add-button"><span>＋</span> Add grade</button>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <div class="stat-icon blue">♙</div><div><p class="stat-label">Total students</p><strong id="stat-students">0</strong><span class="stat-trend positive">↑ Active roster</span></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon purple">◈</div><div><p class="stat-label">Class average</p><strong id="stat-average">0%</strong><span class="stat-trend positive" id="stat-average-note">Across all grades</span></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon orange">◒</div><div><p class="stat-label">Needs attention</p><strong id="stat-attention">0</strong><span class="stat-trend warning">Below 70%</span></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon green">✓</div><div><p class="stat-label">Assignments</p><strong id="stat-assignments">0</strong><span class="stat-trend positive">Graded this term</span></div>
+          </article>
+        </div>
+
+        <div class="content-grid">
+          <article class="card roster-card">
+            <div class="card-heading"><div><h2>Student performance</h2><p class="muted">A quick look at your roster</p></div><button class="text-button" data-view="students">View all <span>→</span></button></div>
+            <div class="table-wrap"><table><thead><tr><th>Student</th><th>Class</th><th>Average</th><th>Status</th></tr></thead><tbody id="performance-table"></tbody></table></div>
+            <div class="empty-state hidden" id="performance-empty"><span>♙</span><strong>Your roster is empty</strong><p>Add your first student to start tracking progress.</p><button class="primary-button small" data-modal="student-modal">Add student</button></div>
+          </article>
+          <article class="card distribution-card">
+            <div class="card-heading"><div><h2>Grade distribution</h2><p class="muted">Current class averages</p></div></div>
+            <div class="distribution" id="distribution-chart"></div>
+            <div class="legend"><span><i class="dot green-dot"></i>A / Excellent</span><span><i class="dot blue-dot"></i>B / Good</span><span><i class="dot yellow-dot"></i>C / Fair</span><span><i class="dot red-dot"></i>Needs help</span></div>
+          </article>
+        </div>
+
+        <article class="card activity-card">
+          <div class="card-heading"><div><h2>Recent activity</h2><p class="muted">Your latest gradebook updates</p></div><button class="text-button" id="export-button">Export data <span>↗</span></button></div>
+          <div id="activity-list" class="activity-list"></div>
+        </article>
+      </section>
+
+      <section id="students-view" class="view-panel hidden">
+        <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Students</h1><p class="muted">Manage your roster and monitor individual progress.</p></div><button class="primary-button" data-modal="student-modal">＋ Add student</button></div>
+        <div class="toolbar"><div class="search-box"><span>⌕</span><input id="student-search" type="search" placeholder="Search students..."></div><select id="class-filter"><option value="all">All classes</option></select></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>Student</th><th>Class</th><th>Email</th><th>Average</th><th>Last updated</th><th></th></tr></thead><tbody id="students-table"></tbody></table></div><div class="empty-state hidden" id="students-empty"><span>⌕</span><strong>No students found</strong><p>Try a different search or add a new student.</p></div></div>
+      </section>
+
+      <section id="assignments-view" class="view-panel hidden">
+        <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Assignments</h1><p class="muted">Record grades and keep your classes moving forward.</p></div><button class="primary-button" data-modal="grade-modal">＋ Record grade</button></div>
+        <div class="card assignments-list" id="assignments-list"></div>
+        <div class="empty-state hidden card" id="assignments-empty"><span>✓</span><strong>No assignments yet</strong><p>Record your first grade to see it here.</p><button class="primary-button small" data-modal="grade-modal">Record grade</button></div>
+      </section>
+
+      <section id="subjects-view" class="view-panel hidden">
+        <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Subjects</h1><p class="muted">Create subjects and organize students by class.</p></div><button class="primary-button" data-modal="subject-modal">＋ Add subject</button></div>
+        <div class="subject-grid" id="subjects-list"></div>
+        <div class="empty-state hidden card" id="subjects-empty"><span>◈</span><strong>No subjects yet</strong><p>Create a subject before adding students.</p><button class="primary-button small" data-modal="subject-modal">Add subject</button></div>
+      </section>
+
+      <section id="settings-view" class="view-panel hidden">
+        <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Settings</h1><p class="muted">Customize your gradebook and manage your local data.</p></div></div>
+        <div class="settings-grid">
+          <article class="card settings-card"><div class="settings-title"><span class="stat-icon blue">◉</span><div><h2>Gradebook preferences</h2><p class="muted">Set defaults for this browser.</p></div></div><label class="setting-row">Passing grade <input id="passing-grade" type="number" min="0" max="100" step="1"></label><label class="setting-row">Teacher name <input id="teacher-name" type="text" maxlength="40"></label><button class="primary-button" id="save-settings">Save preferences</button></article>
+          <article class="card settings-card"><div class="settings-title"><span class="stat-icon purple">⇅</span><div><h2>Data management</h2><p class="muted">Back up or move your gradebook.</p></div></div><div class="setting-actions"><button class="secondary-button" id="export-settings">Download backup</button><label class="secondary-button file-button">Import backup<input id="import-file" type="file" accept="application/json"></label></div><button class="danger-button" id="clear-data">Clear all local data</button></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="student-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="student-modal-title"><button class="close-button" data-close>×</button><p class="eyebrow">Roster</p><h2 id="student-modal-title">Add a student</h2><p class="muted">Add a student to start tracking their progress.</p><form id="student-form"><label>Student name<input name="name" required placeholder="e.g. Jordan Lee"></label><label>Email <span class="optional">(optional)</span><input name="email" type="email" placeholder="jordan@example.com"></label><label>Subject<select name="className" id="student-subject" required></select></label><button class="primary-button full" type="submit">Add student</button></form></div>
+  </div>
+  <div class="modal-backdrop hidden" id="subject-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="subject-modal-title"><button class="close-button" data-close>×</button><p class="eyebrow">Workspace</p><h2 id="subject-modal-title">Add a subject</h2><p class="muted">Create a subject that can be assigned to students.</p><form id="subject-form"><label>Subject name<input name="name" required placeholder="e.g. Algebra II"></label><button class="primary-button full" type="submit">Add subject</button></form></div>
+  </div>
+  <div class="modal-backdrop hidden" id="grade-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="grade-modal-title"><button class="close-button" data-close>×</button><p class="eyebrow">Gradebook</p><h2 id="grade-modal-title">Record a grade</h2><p class="muted">Add an assignment score for a student.</p><form id="grade-form"><label>Class / Subject<select name="className" id="grade-class" required></select></label><label>Student<select name="studentId" id="grade-student" required></select></label><label>Assignment name<input name="assignment" required placeholder="e.g. Chapter 3 quiz"></label><label>Grade type<select name="gradeType" id="grade-type"><option value="percent">Percentage</option><option value="letter">Letter grade</option></select></label><div class="form-row"><label id="percent-grade-field">Score (%)<input name="score" id="grade-score" type="number" min="0" max="100" required placeholder="92"></label><label id="letter-grade-field" class="hidden">Letter<select name="letter" id="grade-letter"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="F">F</option></select></label><label id="max-points-field">Max points<input name="maxPoints" id="max-points" type="number" min="1" value="100" required></label></div><button class="primary-button full" type="submit">Save grade</button></form></div>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="script.js"></script>
+</body>
+</html>
