@@ -30,7 +30,11 @@ function loadData() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved) return structuredClone(defaultData);
-    saved.subjects = [...new Set([...(saved.subjects || []), ...(saved.students || []).map((student) => student.className).filter(Boolean)])];
+    saved.students = (saved.students || []).map((student) => {
+      const classes = [...new Set((student.classes || [student.className]).filter(Boolean))];
+      return { ...student, classes, className: classes[0] || "" };
+    });
+    saved.subjects = [...new Set([...(saved.subjects || []), ...saved.students.flatMap((student) => student.classes)])];
     return saved;
   }
   catch { return structuredClone(defaultData); }
@@ -93,12 +97,12 @@ function renderActivity() {
 }
 function renderStudents() {
   const search = ($("#student-search")?.value || "").toLowerCase(); const classFilter = $("#class-filter")?.value || "all";
-  const students = data.students.filter((student) => `${student.name} ${student.email} ${student.className}`.toLowerCase().includes(search) && (classFilter === "all" || student.className === classFilter));
-  $("#students-table").innerHTML = students.map((student, index) => { const score = average(student.id); return `<tr><td><div class="student-cell"><span class="student-avatar ${index % 2 ? "alt" : ""}">${initials(student.name)}</span>${student.name}</div></td><td>${student.className}</td><td>${student.email || "—"}</td><td class="score">${score === null ? "—" : `${score}%`}</td><td>${formatDate(data.grades.filter((grade) => grade.studentId === student.id).sort((a, b) => b.date.localeCompare(a.date))[0]?.date || student.createdAt)}</td><td><button class="action-menu delete-student" data-id="${student.id}" title="Remove student">···</button></td></tr>`; }).join("");
+  const students = data.students.filter((student) => `${student.name} ${student.email} ${(student.classes || [student.className]).join(" ")}`.toLowerCase().includes(search) && (classFilter === "all" || (student.classes || [student.className]).includes(classFilter)));
+  $("#students-table").innerHTML = students.map((student, index) => { const score = average(student.id); const classes = student.classes || [student.className]; return `<tr><td><button class="student-link" data-edit-student="${student.id}"><div class="student-cell"><span class="student-avatar ${index % 2 ? "alt" : ""}">${initials(student.name)}</span>${student.name}</div></button></td><td>${classes.join(", ")}</td><td>${student.email || "—"}</td><td class="score">${score === null ? "—" : `${score}%`}</td><td>${formatDate(data.grades.filter((grade) => grade.studentId === student.id).sort((a, b) => b.date.localeCompare(a.date))[0]?.date || student.createdAt)}</td><td><button class="action-menu delete-student" data-id="${student.id}" title="Remove student">···</button></td></tr>`; }).join("");
   $("#students-empty").classList.toggle("hidden", students.length > 0);
 }
 function renderFilters() {
-  const current = $("#class-filter").value; const classes = [...new Set(data.students.map((student) => student.className))];
+  const current = $("#class-filter").value; const classes = [...new Set(data.students.flatMap((student) => student.classes || [student.className]).filter(Boolean))];
   $("#class-filter").innerHTML = `<option value="all">All classes</option>${classes.map((name) => `<option value="${name}">${name}</option>`).join("")}`;
   $("#class-filter").value = classes.includes(current) ? current : "all";
 }
@@ -109,7 +113,7 @@ function renderGradeClasses() {
 }
 function renderGradeStudents() {
   const selectedClass = $("#grade-class").value;
-  const students = data.students.filter((student) => !selectedClass || student.className === selectedClass);
+  const students = data.students.filter((student) => !selectedClass || (student.classes || [student.className]).includes(selectedClass));
   $("#grade-student").innerHTML = students.length
     ? students.map((student) => `<option value="${student.id}">${student.name}</option>`).join("")
     : `<option value="">No students in this class</option>`;
@@ -118,11 +122,12 @@ function renderStudentSubjects() {
   $("#student-subject").innerHTML = data.subjects.length
     ? data.subjects.map((subject) => `<option value="${subject}">${subject}</option>`).join("")
     : `<option value="">Add a subject first</option>`;
+  $("#edit-student-classes").innerHTML = data.subjects.map((subject) => `<label class="class-checkbox"><input type="checkbox" name="classes" value="${subject}"> ${subject}</label>`).join("") || `<span class="muted">Add a subject first.</span>`;
 }
 function renderSubjects() {
   const list = $("#subjects-list");
   list.innerHTML = data.subjects.map((subject) => {
-    const students = data.students.filter((student) => student.className === subject);
+    const students = data.students.filter((student) => (student.classes || [student.className]).includes(subject));
     const grades = data.grades.filter((grade) => students.some((student) => student.id === grade.studentId));
     const score = grades.length ? Math.round(grades.reduce((sum, grade) => sum + grade.score, 0) / grades.length) : null;
     return `<article class="card subject-card"><div class="subject-icon">◈</div><div class="subject-info"><h2>${subject}</h2><p>${students.length} student${students.length === 1 ? "" : "s"} · ${grades.length} grade${grades.length === 1 ? "" : "s"}</p></div><strong class="subject-average">${score === null ? "—" : `${score}%`}</strong><button class="action-menu delete-subject" data-subject="${subject}" title="Remove subject">···</button></article>`;
@@ -157,7 +162,8 @@ $$("[data-modal]").forEach((button) => button.addEventListener("click", () => op
 $("#quick-add-button").addEventListener("click", () => openModal("grade-modal"));
 $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeModal(button.closest(".modal-backdrop"))));
 $$(".modal-backdrop").forEach((backdrop) => backdrop.addEventListener("click", (event) => { if (event.target === backdrop) closeModal(backdrop); }));
-$("#student-form").addEventListener("submit", (event) => { event.preventDefault(); if (!data.subjects.length) { notify("Add a subject before adding a student."); return; } const form = new FormData(event.target); const student = { id: `s${Date.now()}`, name: form.get("name").trim(), email: form.get("email").trim(), className: form.get("className").trim(), createdAt: new Date().toISOString().slice(0, 10) }; data.students.push(student); addActivity(`You added ${student.name} to your roster`, student.className); saveData(); render(); closeModal($("#student-modal")); notify(`${student.name} added to your roster.`); });
+$("#student-form").addEventListener("submit", (event) => { event.preventDefault(); if (!data.subjects.length) { notify("Add a subject before adding a student."); return; } const form = new FormData(event.target); const className = form.get("className").trim(); const student = { id: `s${Date.now()}`, name: form.get("name").trim(), email: form.get("email").trim(), className, classes: [className], createdAt: new Date().toISOString().slice(0, 10) }; data.students.push(student); addActivity(`You added ${student.name} to your roster`, className); saveData(); render(); closeModal($("#student-modal")); notify(`${student.name} added to your roster.`); });
+$("#edit-student-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const student = studentById(form.get("studentId")); const classes = form.getAll("classes"); if (!student || !classes.length) { notify("Choose at least one class."); return; } student.name = form.get("name").trim(); student.email = form.get("email").trim(); student.classes = classes; student.className = classes[0]; addActivity(`You updated ${student.name}'s classes`, classes.join(" · ")); saveData(); render(); closeModal($("#edit-student-modal")); notify(`${student.name}'s classes updated.`); });
 $("#subject-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const name = form.get("name").trim(); if (data.subjects.some((subject) => subject.toLowerCase() === name.toLowerCase())) { notify("That subject already exists."); return; } data.subjects.push(name); saveData(); render(); closeModal($("#subject-modal")); notify(`${name} added.`); });
 $("#grade-type").addEventListener("change", (event) => { const isLetter = event.target.value === "letter"; $("#percent-grade-field").classList.toggle("hidden", isLetter); $("#letter-grade-field").classList.toggle("hidden", !isLetter); $("#max-points-field").classList.toggle("hidden", isLetter); $("#grade-score").required = !isLetter; $("#grade-letter").required = isLetter; $("#max-points").required = !isLetter; });
 $("#grade-class").addEventListener("change", renderGradeStudents);
@@ -167,7 +173,7 @@ $("#export-button").addEventListener("click", exportCsv); $("#export-settings").
 $("#save-settings").addEventListener("click", () => { data.settings.passingGrade = Math.max(0, Math.min(100, Number($("#passing-grade").value) || 70)); data.settings.teacherName = $("#teacher-name").value.trim() || "Teacher"; saveData(); render(); notify("Preferences saved."); });
 $("#import-file").addEventListener("change", (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (!imported.students || !imported.grades) throw new Error("Invalid backup"); imported.subjects = [...new Set([...(imported.subjects || []), ...imported.students.map((student) => student.className).filter(Boolean)])]; data = imported; saveData(); render(); notify("Backup imported."); } catch { notify("That file is not a valid GradeFlow backup."); } }; reader.readAsText(file); });
 $("#clear-data").addEventListener("click", () => { if (confirm("Clear all students, grades, subjects, and activity from this browser?")) { data = { settings: { passingGrade: 70, teacherName: "Teacher" }, subjects: [], students: [], grades: [], activity: [] }; saveData(); render(); notify("Local gradebook cleared."); } });
-document.addEventListener("click", (event) => { const button = event.target.closest(".delete-subject"); if (!button) return; const subject = button.dataset.subject; const students = data.students.filter((student) => student.className === subject); if (students.length) { notify("Move the students to another subject before removing this one."); return; } data.subjects = data.subjects.filter((item) => item !== subject); saveData(); render(); notify(`${subject} removed.`); });
+document.addEventListener("click", (event) => { const editButton = event.target.closest("[data-edit-student]"); if (editButton) { const student = studentById(editButton.dataset.editStudent); if (!student) return; const classes = student.classes || [student.className]; $("#edit-student-id").value = student.id; $("#edit-student-name").value = student.name; $("#edit-student-email").value = student.email || ""; $$("#edit-student-classes input").forEach((input) => { input.checked = classes.includes(input.value); }); $("#edit-student-modal").classList.remove("hidden"); return; } const button = event.target.closest(".delete-subject"); if (!button) return; const subject = button.dataset.subject; const students = data.students.filter((student) => (student.classes || [student.className]).includes(subject)); if (students.length) { notify("Move the students to another class before removing this one."); return; } data.subjects = data.subjects.filter((item) => item !== subject); saveData(); render(); notify(`${subject} removed.`); });
 $("#theme-toggle").addEventListener("click", () => { document.body.classList.toggle("dark"); localStorage.setItem("gradeflow-theme", document.body.classList.contains("dark") ? "dark" : "light"); });
 if (localStorage.getItem("gradeflow-theme") === "dark") document.body.classList.add("dark");
 render();
