@@ -59,15 +59,6 @@ function gradeLabel(grade) { return grade.letter || `${grade.score}%`; }
 function notify(message) { const toast = $("#toast"); toast.textContent = message; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2600); }
 
 function render() {
-  const averages = data.students.map((student) => average(student.id)).filter((value) => value !== null);
-  const classAverage = averages.length ? Math.round(averages.reduce((sum, value) => sum + value, 0) / averages.length) : 0;
-  $("#stat-students").textContent = data.students.length;
-  $("#stat-average").textContent = `${classAverage}%`;
-  $("#stat-attention").textContent = data.students.filter((student) => (average(student.id) ?? 0) < data.settings.passingGrade).length;
-  $("#stat-assignments").textContent = data.grades.length;
-  renderPerformance();
-  renderDistribution();
-  renderActivity();
   renderStudents();
   renderAssignments();
   renderFilters();
@@ -175,7 +166,7 @@ $("#grade-type").addEventListener("change", (event) => { const isLetter = event.
 $("#grade-class").addEventListener("change", renderGradeStudents);
 $("#grade-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const student = studentById(form.get("studentId")); if (!student || student.className !== form.get("className")) { notify("Choose a student from the selected class."); return; } const letter = form.get("gradeType") === "letter" ? form.get("letter") : null; const score = letter ? letterScores[letter] : Number(form.get("score")); const grade = { id: `g${Date.now()}`, studentId: student.id, className: form.get("className"), assignment: form.get("assignment").trim(), score, letter, maxPoints: Number(form.get("maxPoints")), date: new Date().toISOString().slice(0, 10) }; data.grades.push(grade); addActivity(`You recorded a grade for ${student.name}`, `${grade.className} · ${grade.assignment} · ${gradeLabel(grade)}`); saveData(); render(); closeModal($("#grade-modal")); notify("Grade saved."); });
 $("#student-search").addEventListener("input", renderStudents); $("#class-filter").addEventListener("change", renderStudents);
-$("#export-button").addEventListener("click", exportCsv); $("#export-settings").addEventListener("click", () => { download("gradeflow-backup.json", JSON.stringify(data, null, 2)); notify("Backup downloaded."); });
+$("#export-settings").addEventListener("click", () => { download("gradeflow-backup.json", JSON.stringify(data, null, 2)); notify("Backup downloaded."); });
 $("#save-settings").addEventListener("click", () => { data.settings.passingGrade = Math.max(0, Math.min(100, Number($("#passing-grade").value) || 70)); data.settings.teacherName = $("#teacher-name").value.trim() || "Teacher"; saveData(); render(); notify("Preferences saved."); });
 $("#import-file").addEventListener("change", (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (!imported.students || !imported.grades) throw new Error("Invalid backup"); imported.subjects = [...new Set([...(imported.subjects || []), ...imported.students.map((student) => student.className).filter(Boolean)])]; data = imported; saveData(); render(); notify("Backup imported."); } catch { notify("That file is not a valid GradeFlow backup."); } }; reader.readAsText(file); });
 $("#clear-data").addEventListener("click", () => { if (confirm("Clear all students, grades, subjects, and activity from this browser?")) { data = { settings: { passingGrade: 70, teacherName: "Teacher" }, subjects: [], students: [], grades: [], activity: [] }; saveData(); render(); notify("Local gradebook cleared."); } });

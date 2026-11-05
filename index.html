@@ -19,8 +19,7 @@
       </a>
       <p class="sidebar-label">Workspace</p>
       <nav class="nav-list" aria-label="Main navigation">
-        <button class="nav-item active" data-view="overview"><span class="nav-icon">▦</span> Overview</button>
-        <button class="nav-item" data-view="students"><span class="nav-icon">♙</span> Students</button>
+        <button class="nav-item active" data-view="students"><span class="nav-icon">♙</span> Students</button>
         <button class="nav-item" data-view="subjects"><span class="nav-icon">◈</span> Subjects</button>
         <button class="nav-item" data-view="assignments"><span class="nav-icon">✓</span> Assignments</button>
       </nav>
@@ -42,50 +41,7 @@
         </div>
       </header>
 
-      <section id="overview-view" class="view-panel">
-        <div class="page-heading">
-          <div>
-            <p class="eyebrow">Monday, October 23, 2026</p>
-            <h1>Good morning, Alex <span class="wave">✦</span></h1>
-            <p class="muted">Here’s how your classes are progressing.</p>
-          </div>
-        </div>
-
-        <div class="stats-grid">
-          <article class="stat-card">
-            <div class="stat-icon blue">♙</div><div><p class="stat-label">Total students</p><strong id="stat-students">0</strong><span class="stat-trend positive">↑ Active roster</span></div>
-          </article>
-          <article class="stat-card">
-            <div class="stat-icon purple">◈</div><div><p class="stat-label">Class average</p><strong id="stat-average">0%</strong><span class="stat-trend positive" id="stat-average-note">Across all grades</span></div>
-          </article>
-          <article class="stat-card">
-            <div class="stat-icon orange">◒</div><div><p class="stat-label">Needs attention</p><strong id="stat-attention">0</strong><span class="stat-trend warning">Below 70%</span></div>
-          </article>
-          <article class="stat-card">
-            <div class="stat-icon green">✓</div><div><p class="stat-label">Assignments</p><strong id="stat-assignments">0</strong><span class="stat-trend positive">Graded this term</span></div>
-          </article>
-        </div>
-
-        <div class="content-grid">
-          <article class="card roster-card">
-            <div class="card-heading"><div><h2>Student performance</h2><p class="muted">A quick look at your roster</p></div><button class="text-button" data-view="students">View all <span>→</span></button></div>
-            <div class="table-wrap"><table><thead><tr><th>Student</th><th>Average</th><th>Status</th></tr></thead><tbody id="performance-table"></tbody></table></div>
-            <div class="empty-state hidden" id="performance-empty"><span>♙</span><strong>Your roster is empty</strong><p>Add your first student to start tracking progress.</p><button class="primary-button small" data-modal="student-modal">Add student</button></div>
-          </article>
-          <article class="card distribution-card">
-            <div class="card-heading"><div><h2>Grade distribution</h2><p class="muted">Current class averages</p></div></div>
-            <div class="distribution" id="distribution-chart"></div>
-            <div class="legend"><span><i class="dot green-dot"></i>A / Excellent</span><span><i class="dot blue-dot"></i>B / Good</span><span><i class="dot yellow-dot"></i>C / Fair</span><span><i class="dot red-dot"></i>Needs help</span></div>
-          </article>
-        </div>
-
-        <article class="card activity-card">
-          <div class="card-heading"><div><h2>Recent activity</h2><p class="muted">Your latest gradebook updates</p></div><button class="text-button" id="export-button">Export data <span>↗</span></button></div>
-          <div id="activity-list" class="activity-list"></div>
-        </article>
-      </section>
-
-      <section id="students-view" class="view-panel hidden">
+      <section id="students-view" class="view-panel">
         <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Students</h1><p class="muted">Manage your roster and monitor individual progress.</p></div><button class="primary-button" data-modal="student-modal">＋ Add student</button></div>
         <div class="toolbar"><div class="search-box"><span>⌕</span><input id="student-search" type="search" placeholder="Search students..."></div><select id="class-filter"><option value="all">All classes</option></select></div>
         <div class="card"><div class="table-wrap"><table><thead><tr><th>Student</th><th>Email</th><th>Average</th><th>Last updated</th><th></th></tr></thead><tbody id="students-table"></tbody></table></div><div class="empty-state hidden" id="students-empty"><span>⌕</span><strong>No students found</strong><p>Try a different search or add a new student.</p></div></div>
