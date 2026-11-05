@@ -166,7 +166,6 @@ function exportCsv() { const rows = [["Student", "Class", "Assignment", "Grade",
 
 $$(".nav-item, [data-view]").forEach((button) => button.addEventListener("click", () => { const view = button.dataset.view; if (!view) return; $$(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.view === view)); $$(".view-panel").forEach((panel) => panel.classList.toggle("hidden", panel.id !== `${view}-view`)); }));
 $$("[data-modal]").forEach((button) => button.addEventListener("click", () => openModal(button.dataset.modal)));
-$("#quick-add-button").addEventListener("click", () => openModal("grade-modal"));
 $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeModal(button.closest(".modal-backdrop"))));
 $$(".modal-backdrop").forEach((backdrop) => backdrop.addEventListener("click", (event) => { if (event.target === backdrop) closeModal(backdrop); }));
 $("#student-form").addEventListener("submit", (event) => { event.preventDefault(); if (!data.subjects.length) { notify("Add a subject before adding a student."); return; } const form = new FormData(event.target); const className = form.get("className").trim(); const student = { id: `s${Date.now()}`, name: form.get("name").trim(), email: form.get("email").trim(), className, classes: [className], createdAt: new Date().toISOString().slice(0, 10) }; data.students.push(student); addActivity(`You added ${student.name} to your roster`, className); saveData(); render(); closeModal($("#student-modal")); notify(`${student.name} added to your roster.`); });
