@@ -55,6 +55,10 @@ function validWebsiteUrl(value) {
     const displayHours = hours % 12 || 12;
     return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
   }
+  function timeParts(time) {
+    const [hours, minutes] = String(time || "08:00").split(":").map(Number);
+    return { hour: String(hours % 12 || 12), minute: String(minutes).padStart(2, "0"), period: hours >= 12 ? "PM" : "AM" };
+  }
 }
 function buildSchedule(assignments) {
   const days = ["Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -118,7 +122,10 @@ function render() {
   renderGradeStudents();
   $("#teacher-name").value = data.settings.teacherName;
   $("#display-date").value = data.settings.displayDate;
-  $("#display-time").value = data.settings.displayTime;
+  const time = timeParts(data.settings.displayTime);
+  $("#display-hour").value = time.hour;
+  $("#display-minute").value = time.minute;
+  $("#display-period").value = time.period;
   $("#home-date").textContent = new Date(`${data.settings.displayDate}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   $("#home-time").textContent = formatTime(data.settings.displayTime);
 }
@@ -221,7 +228,7 @@ $("#grade-type").addEventListener("change", (event) => { const isLetter = event.
 $("#grade-class").addEventListener("change", renderGradeStudents);
 $("#grade-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const student = studentById(form.get("studentId")); if (!student || !(student.classes || [student.className]).includes(form.get("className"))) { notify("Choose a student from the selected class."); return; } const letter = form.get("gradeType") === "letter" ? form.get("letter") : null; const score = letter ? letterScores[letter] : Number(form.get("score")); const grade = { id: `g${Date.now()}`, studentId: student.id, className: form.get("className"), assignment: form.get("assignment").trim(), score, letter, maxPoints: Number(form.get("maxPoints")), date: new Date().toISOString().slice(0, 10) }; data.grades.push(grade); addActivity(`You recorded a grade for ${student.name}`, `${grade.className} · ${grade.assignment} · ${gradeLabel(grade)}`); saveData(); render(); closeModal($("#grade-modal")); notify("Grade saved."); });
 $("#export-settings").addEventListener("click", () => { download("gradeflow-backup.json", JSON.stringify(data, null, 2)); notify("Backup downloaded."); });
-$("#save-settings").addEventListener("click", () => { data.settings.teacherName = $("#teacher-name").value.trim() || "Teacher"; data.settings.displayDate = $("#display-date").value || new Date().toISOString().slice(0, 10); data.settings.displayTime = $("#display-time").value || "08:00"; saveData(); render(); closeModal($("#settings-modal")); notify("Settings saved."); });
+$("#save-settings").addEventListener("click", () => { data.settings.teacherName = $("#teacher-name").value.trim() || "Teacher"; data.settings.displayDate = $("#display-date").value || new Date().toISOString().slice(0, 10); const hour = Number($("#display-hour").value); const minute = $("#display-minute").value; const period = $("#display-period").value; data.settings.displayTime = `${String(period === "PM" ? (hour % 12) + 12 : hour % 12).padStart(2, "0")}:${minute}`; saveData(); render(); closeModal($("#settings-modal")); notify("Settings saved."); });
 $("#import-file").addEventListener("change", (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (!imported.students || !imported.grades) throw new Error("Invalid backup"); imported.settings = { ...defaultData.settings, ...(imported.settings || {}) }; imported.subjects = [...new Set([...(imported.subjects || []), ...imported.students.map((student) => student.className).filter(Boolean)])]; data = imported; saveData(); render(); notify("Backup imported."); } catch { notify("That file is not a valid GradeFlow backup."); } }; reader.readAsText(file); });
 $("#clear-data").addEventListener("click", () => { if (confirm("Clear all students, grades, subjects, and activity from this browser?")) { data = structuredClone(defaultData); data.settings.teacherName = "Teacher"; saveData(); render(); notify("Local gradebook cleared."); } });
 document.addEventListener("click", (event) => { const modalButton = event.target.closest("[data-modal]"); if (modalButton) { openModal(modalButton.dataset.modal); return; } const profileButton = event.target.closest("[data-profile-student]"); if (profileButton) { const student = studentById(profileButton.dataset.profileStudent); if (student) openStudentProfile(student); return; } const editButton = event.target.closest("[data-profile-edit]"); if (editButton) { const student = studentById(editButton.dataset.profileEdit); if (!student) return; $("#edit-student-id").value = student.id; $("#edit-student-name").value = student.name; $("#edit-student-email").value = student.email || ""; $$("#edit-student-classes input").forEach((input) => { input.checked = (student.classes || [student.className]).includes(input.value); }); $("#edit-student-modal").classList.remove("hidden"); return; } });
