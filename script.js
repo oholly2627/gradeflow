@@ -40,6 +40,7 @@ function statusFor(score) {
 function studentById(id) { return data.students.find((student) => student.id === id); }
 const letterScores = { A: 97.5, B: 89.5, C: 79.5, D: 69.5, F: 32 };
 function gradeLabel(grade) { return grade.letter || `${grade.score}%`; }
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character])); }
 function notify(message) { const toast = $("#toast"); toast.textContent = message; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2600); }
 
 function render() {
@@ -98,10 +99,9 @@ function renderStudentSubjects() {
   $("#edit-student-classes").innerHTML = data.subjects.map((subject) => `<label class="class-checkbox"><input type="checkbox" name="classes" value="${subject}"> ${subject}</label>`).join("") || `<span class="muted">Add a subject first.</span>`;
 }
 function openStudentProfile(student) {
-  const classes = student.classes || [student.className];
-  const grades = studentGrades(student.id).slice().sort((a, b) => b.date.localeCompare(a.date));
-  const score = average(student.id);
-  $("#student-profile-page").innerHTML = `<div class="page-heading"><div><p class="eyebrow">Student profile</p><h1>${student.name}</h1><p class="muted">${student.email || "No email added"}</p></div><button class="secondary-button" data-profile-edit="${student.id}">Edit profile</button></div><div class="profile-stats"><div><span class="stat-label">Average score</span><strong>${score === null ? "—" : `${score}%`}</strong></div><div><span class="stat-label">Assignments</span><strong>${grades.length}</strong></div></div><div class="card profile-section"><h2>Classes</h2><p class="muted">${classes.join(", ") || "No classes assigned"}</p></div><div class="card profile-section"><h2>Grades and scores</h2>${grades.length ? `<div class="profile-grades">${grades.map((grade) => `<div class="profile-grade"><div><strong>${grade.assignment}</strong><small>${grade.className || classes[0] || ""} · ${formatDate(grade.date)}</small></div><strong class="${grade.score < data.settings.passingGrade ? "warning" : ""}">${gradeLabel(grade)}</strong></div>`).join("")}</div>` : `<p class="muted">No grades recorded yet.</p>`}</div>`;
+  const schedule = student.schedule || [];
+  const days = ["Tuesday", "Wednesday", "Thursday", "Friday"];
+  $("#student-profile-page").innerHTML = `<div class="page-heading"><div><p class="eyebrow">Student profile</p><h1>${escapeHtml(student.name)}</h1><p class="muted">${escapeHtml(student.email || "No email added")}</p></div><button class="secondary-button" data-profile-edit="${student.id}">Edit profile</button></div><div class="card profile-section schedule-planner"><h2>Build a weekly schedule</h2><p class="muted">Enter one assignment per line. GradeFlow will spread them across Tuesday through Friday.</p><form data-schedule-form="${student.id}"><label>Assignments<textarea name="assignments" rows="7" placeholder="Read chapter 3&#10;Finish science worksheet&#10;Practice vocabulary">${schedule.map((item) => escapeHtml(item.assignment)).join("\n")}</textarea></label><button class="primary-button" type="submit">Create schedule</button></form></div><div class="card profile-section"><h2>Tuesday through Friday</h2>${schedule.length ? `<div class="schedule-grid">${days.map((day) => `<div class="schedule-day"><h3>${day}</h3><div class="schedule-items">${schedule.filter((item) => item.day === day).map((item) => `<div class="schedule-item">${escapeHtml(item.assignment)}</div>`).join("") || `<p class="muted">No assignments</p>`}</div></div>`).join("")}</div>` : `<p class="muted">No schedule yet. Add assignments above to create one.</p>`}</div>`;
   $$(".view-panel").forEach((panel) => panel.classList.toggle("hidden", panel.id !== "student-profile-view"));
 }
 function openModal(id) {
@@ -128,7 +128,7 @@ function closeModal(modal) {
 }
 function addActivity(text, detail) { data.activity.unshift({ text, detail, date: new Date().toISOString().slice(0, 10) }); }
 function addStudent(name) {
-  const student = { id: `s${Date.now()}`, name, email: "", className: "", classes: [], createdAt: new Date().toISOString().slice(0, 10) };
+  const student = { id: `s${Date.now()}`, name, email: "", className: "", classes: [], schedule: [], createdAt: new Date().toISOString().slice(0, 10) };
   data.students.push(student);
   saveData();
   renderSidebarStudents();
@@ -150,6 +150,7 @@ $("#save-settings").addEventListener("click", () => { data.settings.passingGrade
 $("#import-file").addEventListener("change", (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (!imported.students || !imported.grades) throw new Error("Invalid backup"); imported.subjects = [...new Set([...(imported.subjects || []), ...imported.students.map((student) => student.className).filter(Boolean)])]; data = imported; saveData(); render(); notify("Backup imported."); } catch { notify("That file is not a valid GradeFlow backup."); } }; reader.readAsText(file); });
 $("#clear-data").addEventListener("click", () => { if (confirm("Clear all students, grades, subjects, and activity from this browser?")) { data = { settings: { passingGrade: 70, teacherName: "Teacher" }, subjects: [], students: [], grades: [], activity: [] }; saveData(); render(); notify("Local gradebook cleared."); } });
 document.addEventListener("click", (event) => { const modalButton = event.target.closest("[data-modal]"); if (modalButton) { openModal(modalButton.dataset.modal); return; } const profileButton = event.target.closest("[data-profile-student]"); if (profileButton) { const student = studentById(profileButton.dataset.profileStudent); if (student) openStudentProfile(student); return; } const editButton = event.target.closest("[data-profile-edit]"); if (editButton) { const student = studentById(editButton.dataset.profileEdit); if (!student) return; $("#edit-student-id").value = student.id; $("#edit-student-name").value = student.name; $("#edit-student-email").value = student.email || ""; $$("#edit-student-classes input").forEach((input) => { input.checked = (student.classes || [student.className]).includes(input.value); }); $("#edit-student-modal").classList.remove("hidden"); return; } });
+document.addEventListener("submit", (event) => { const scheduleForm = event.target.closest("[data-schedule-form]"); if (!scheduleForm) return; event.preventDefault(); const student = studentById(scheduleForm.dataset.scheduleForm); const assignments = String(new FormData(scheduleForm).get("assignments") || "").split(/\r?\n/).map((assignment) => assignment.trim()).filter(Boolean); if (!student) return; if (!assignments.length) { notify("Enter at least one assignment."); return; } const days = ["Tuesday", "Wednesday", "Thursday", "Friday"]; student.schedule = assignments.map((assignment, index) => ({ assignment, day: days[index % days.length] })); saveData(); openStudentProfile(student); notify("Weekly schedule created."); });
 $("#theme-toggle").addEventListener("click", () => { document.body.classList.toggle("dark"); localStorage.setItem("gradeflow-theme", document.body.classList.contains("dark") ? "dark" : "light"); });
 if (localStorage.getItem("gradeflow-theme") === "dark") document.body.classList.add("dark");
 render();
