@@ -17,6 +17,8 @@
         <span class="brand-mark">G</span>
         <span>Grade<span class="brand-accent">Flow</span></span>
       </a>
+      <button class="primary-button sidebar-add-student" data-modal="student-modal">＋ Add student</button>
+      <div class="sidebar-students" id="sidebar-students"></div>
       <p class="sidebar-label">Workspace</p>
       <nav class="nav-list" aria-label="Main navigation">
       </nav>
@@ -45,6 +47,10 @@
           <article class="card settings-card"><div class="settings-title"><span class="stat-icon purple">⇅</span><div><h2>Data management</h2><p class="muted">Back up or move your gradebook.</p></div></div><div class="setting-actions"><button class="secondary-button" id="export-settings">Download backup</button><label class="secondary-button file-button">Import backup<input id="import-file" type="file" accept="application/json"></label></div><button class="danger-button" id="clear-data">Clear all local data</button></article>
         </div>
       </section>
+      <section id="student-profile-view" class="view-panel hidden">
+        <button class="text-button profile-back" data-view="settings">← Back to settings</button>
+        <div id="student-profile-page"></div>
+      </section>
     </main>
   </div>
 
@@ -53,9 +59,6 @@
   </div>
   <div class="modal-backdrop hidden" id="edit-student-modal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-student-modal-title"><button class="close-button" data-close>×</button><p class="eyebrow">Roster</p><h2 id="edit-student-modal-title">Edit student</h2><p class="muted">Update the classes this student takes.</p><form id="edit-student-form"><input name="studentId" id="edit-student-id" type="hidden"><label>Student name<input name="name" id="edit-student-name" required></label><label>Email <span class="optional">(optional)</span><input name="email" id="edit-student-email" type="email"></label><fieldset class="class-checkboxes"><legend>Classes</legend><div id="edit-student-classes"></div></fieldset><button class="primary-button full" type="submit">Save changes</button></form></div>
-  </div>
-  <div class="modal-backdrop hidden" id="student-profile-modal">
-    <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="student-profile-title"><button class="close-button" data-close>×</button><div id="student-profile-content"></div></div>
   </div>
   <div class="modal-backdrop hidden" id="grade-modal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="grade-modal-title"><button class="close-button" data-close>×</button><p class="eyebrow">Gradebook</p><h2 id="grade-modal-title">Record a grade</h2><p class="muted">Add an assignment score for a student.</p><form id="grade-form"><label>Class / Subject<select name="className" id="grade-class" required></select></label><label>Student<select name="studentId" id="grade-student" required></select></label><label>Assignment name<input name="assignment" required placeholder="e.g. Chapter 3 quiz"></label><label>Grade type<select name="gradeType" id="grade-type"><option value="percent">Percentage</option><option value="letter">Letter grade</option></select></label><div class="form-row"><label id="percent-grade-field">Score (%)<input name="score" id="grade-score" type="number" min="0" max="100" required placeholder="92"></label><label id="letter-grade-field" class="hidden">Letter<select name="letter" id="grade-letter"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="F">F</option></select></label><label id="max-points-field">Max points<input name="maxPoints" id="max-points" type="number" min="1" value="100" required></label></div><button class="primary-button full" type="submit">Save grade</button></form></div>
