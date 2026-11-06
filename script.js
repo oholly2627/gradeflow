@@ -49,6 +49,12 @@ function validWebsiteUrl(value) {
   } catch {
     return "";
   }
+  function formatTime(time) {
+    const [hours, minutes] = String(time || "08:00").split(":").map(Number);
+    const period = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
+  }
 }
 function buildSchedule(assignments) {
   const days = ["Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -114,7 +120,7 @@ function render() {
   $("#display-date").value = data.settings.displayDate;
   $("#display-time").value = data.settings.displayTime;
   $("#home-date").textContent = new Date(`${data.settings.displayDate}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-  $("#home-time").textContent = data.settings.displayTime;
+  $("#home-time").textContent = formatTime(data.settings.displayTime);
 }
 function renderSidebarStudents() {
   const list = $("#sidebar-students");
