@@ -43,7 +43,14 @@ function gradeLabel(grade) { return grade.letter || `${grade.score}%`; }
 function escapeHtml(value) { return String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character])); }
 function buildSchedule(assignments) {
   const days = ["Tuesday", "Wednesday", "Thursday", "Friday"];
+  const lessonLines = assignments.filter((assignment) => /\blessons?\b/i.test(assignment) && !/\d+\s+lessons?/i.test(assignment));
+  let lessonLineIndex = 0;
   return assignments.flatMap((assignment, assignmentIndex) => {
+    if (lessonLines.length > 1 && lessonLines.includes(assignment)) {
+      const dayIndex = Math.min(days.length - 1, Math.floor(lessonLineIndex * days.length / lessonLines.length));
+      lessonLineIndex += 1;
+      return [{ assignment, day: days[dayIndex] }];
+    }
     const reading = assignment.match(/^(.*?\b(?:read|reading)\b.*?)(?:\s*\(?\s*(\d+)\s*pages?\s*\)?\s*)$/i);
     const title = reading?.[1].trim() || assignment;
     const pageCount = reading ? Number(reading[2]) : 0;
