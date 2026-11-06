@@ -49,12 +49,12 @@ function validWebsiteUrl(value) {
   } catch {
     return "";
   }
-  function formatTime(time) {
-    const [hours, minutes] = String(time || "08:00").split(":").map(Number);
-    const period = hours >= 12 ? "PM" : "AM";
-    const displayHours = hours % 12 || 12;
-    return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
-  }
+}
+function formatTime(time) {
+  const [hours, minutes] = String(time || "08:00").split(":").map(Number);
+  const period = hours >= 12 ? "PM" : "AM";
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
 }
 function buildSchedule(assignments) {
   const days = ["Tuesday", "Wednesday", "Thursday", "Friday"];
