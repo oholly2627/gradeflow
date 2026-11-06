@@ -1,26 +1,10 @@
-const STORAGE_KEY = "gradeflow-data-v1";
+const STORAGE_KEY = "gradeflow-data-v2";
 const defaultData = {
   settings: { passingGrade: 70, teacherName: "Alex" },
-  subjects: ["Biology 101", "World History"],
-  students: [
-    { id: "s1", name: "Maya Thompson", email: "maya.t@example.com", className: "Biology 101", createdAt: "2026-10-01" },
-    { id: "s2", name: "Noah Williams", email: "noah.w@example.com", className: "Biology 101", createdAt: "2026-10-02" },
-    { id: "s3", name: "Sofia Martinez", email: "sofia.m@example.com", className: "World History", createdAt: "2026-10-03" },
-    { id: "s4", name: "Ethan Brown", email: "ethan.b@example.com", className: "World History", createdAt: "2026-10-04" }
-  ],
-  grades: [
-    { id: "g1", studentId: "s1", assignment: "Cell structure lab", score: 94, maxPoints: 100, date: "2026-10-21" },
-    { id: "g2", studentId: "s1", assignment: "Chapter 2 quiz", score: 89, maxPoints: 100, date: "2026-10-18" },
-    { id: "g3", studentId: "s2", assignment: "Cell structure lab", score: 76, maxPoints: 100, date: "2026-10-21" },
-    { id: "g4", studentId: "s2", assignment: "Chapter 2 quiz", score: 68, maxPoints: 100, date: "2026-10-18" },
-    { id: "g5", studentId: "s3", assignment: "Primary sources essay", score: 91, maxPoints: 100, date: "2026-10-20" },
-    { id: "g6", studentId: "s4", assignment: "Primary sources essay", score: 63, maxPoints: 100, date: "2026-10-20" }
-  ],
-  activity: [
-    { text: "You recorded a grade for Maya Thompson", detail: "Cell structure lab · 94%", date: "2026-10-21" },
-    { text: "You recorded a grade for Ethan Brown", detail: "Primary sources essay · 63%", date: "2026-10-20" },
-    { text: "You added Sofia Martinez to your roster", detail: "World History", date: "2026-10-03" }
-  ]
+  subjects: [],
+  students: [],
+  grades: [],
+  activity: []
 };
 let data = loadData();
 const $ = (selector) => document.querySelector(selector);
