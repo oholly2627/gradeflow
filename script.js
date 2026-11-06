@@ -117,7 +117,16 @@ function openStudentProfile(student) {
   $("#student-profile-content").innerHTML = `<p class="eyebrow">Student profile</p><div class="profile-heading"><div class="student-cell"><span class="student-avatar">${initials(student.name)}</span><div><h2>${student.name}</h2><p class="muted">${student.email || "No email added"}</p></div></div><button class="secondary-button" data-profile-edit="${student.id}">Edit profile</button></div><div class="profile-stats"><div><span class="stat-label">Average score</span><strong>${score === null ? "—" : `${score}%`}</strong></div><div><span class="stat-label">Assignments</span><strong>${grades.length}</strong></div></div><div class="profile-section"><h3>Classes</h3><p class="muted">${classes.join(", ") || "No classes assigned"}</p></div><div class="profile-section"><h3>Grades and scores</h3>${grades.length ? `<div class="profile-grades">${grades.map((grade) => `<div class="profile-grade"><div><strong>${grade.assignment}</strong><small>${grade.className || classes[0] || ""} · ${formatDate(grade.date)}</small></div><strong class="${grade.score < data.settings.passingGrade ? "warning" : ""}">${gradeLabel(grade)}</strong></div>`).join("")}</div>` : `<p class="muted">No grades recorded yet.</p>`}</div>`;
   $("#student-profile-modal").classList.remove("hidden");
 }
-function openModal(id) { if (data.students.length === 0 && id === "grade-modal") { notify("Add a student before recording a grade."); return; } $(`#${id}`).classList.remove("hidden"); }
+function openModal(id) {
+  if (data.students.length === 0 && id === "grade-modal") { notify("Add a student before recording a grade."); return; }
+  const modal = $(`#${id}`);
+  if (!modal) return;
+  if (id === "student-modal") {
+    $("#student-form").reset();
+    setTimeout(() => $("#student-form input[name='name']").focus(), 0);
+  }
+  modal.classList.remove("hidden");
+}
 function closeModal(modal) {
   modal.classList.add("hidden");
   modal.querySelector("form")?.reset();
@@ -138,7 +147,7 @@ $$(".nav-item, [data-view]").forEach((button) => button.addEventListener("click"
 $$("[data-modal]").forEach((button) => button.addEventListener("click", () => openModal(button.dataset.modal)));
 $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeModal(button.closest(".modal-backdrop"))));
 $$(".modal-backdrop").forEach((backdrop) => backdrop.addEventListener("click", (event) => { if (event.target === backdrop) closeModal(backdrop); }));
-$("#student-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const student = { id: `s${Date.now()}`, name: form.get("name").trim(), email: "", className: "", classes: [], createdAt: new Date().toISOString().slice(0, 10) }; data.students.push(student); addActivity(`You added ${student.name} to your roster`, "No classes assigned"); saveData(); render(); closeModal($("#student-modal")); notify(`${student.name} added to your roster.`); });
+$("#student-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const name = String(form.get("name") || "").trim(); if (!name) { notify("Enter a student name."); $("#student-form input[name='name']").focus(); return; } const student = { id: `s${Date.now()}`, name, email: "", className: "", classes: [], createdAt: new Date().toISOString().slice(0, 10) }; data.students.push(student); addActivity(`You added ${student.name} to your roster`, "No classes assigned"); saveData(); render(); closeModal($("#student-modal")); notify(`${student.name} added to your roster.`); });
 $("#edit-student-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const student = studentById(form.get("studentId")); const classes = form.getAll("classes"); if (!student || !classes.length) { notify("Choose at least one class."); return; } student.name = form.get("name").trim(); student.email = form.get("email").trim(); student.classes = classes; student.className = classes[0]; addActivity(`You updated ${student.name}'s classes`, classes.join(" · ")); saveData(); render(); closeModal($("#edit-student-modal")); notify(`${student.name}'s classes updated.`); });
 $("#grade-type").addEventListener("change", (event) => { const isLetter = event.target.value === "letter"; $("#percent-grade-field").classList.toggle("hidden", isLetter); $("#letter-grade-field").classList.toggle("hidden", !isLetter); $("#max-points-field").classList.toggle("hidden", isLetter); $("#grade-score").required = !isLetter; $("#grade-letter").required = isLetter; $("#max-points").required = !isLetter; });
 $("#grade-class").addEventListener("change", renderGradeStudents);
