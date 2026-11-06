@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="A simple, private gradebook for tracking student progress.">
-  <title>GradeFlow | Student gradebook</title>
+  <title>studyTIME | Student planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
@@ -13,9 +13,9 @@
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <a class="brand" href="#" aria-label="GradeFlow home">
-        <span class="brand-mark">G</span>
-        <span>Grade<span class="brand-accent">Flow</span></span>
+      <a class="brand" href="#" aria-label="studyTIME home">
+        <span class="brand-mark">S</span>
+        <span>studyTIME</span>
       </a>
       <button class="primary-button sidebar-add-student" data-modal="student-modal">＋ Add student</button>
       <div class="sidebar-students" id="sidebar-students"></div>
@@ -33,7 +33,7 @@
 
     <main class="main-content">
       <header class="topbar">
-        <div class="mobile-brand"><span class="brand-mark">G</span> Grade<span class="brand-accent">Flow</span></div>
+        <div class="mobile-brand"><span class="brand-mark">S</span> studyTIME</div>
         <div class="topbar-actions">
           <button class="icon-button" id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">☼</button>
           <button class="avatar" title="Teacher profile">AH</button>
@@ -41,7 +41,7 @@
       </header>
 
       <section id="home-view" class="view-panel">
-        <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Home</h1><p class="muted">Welcome to GradeFlow.</p></div><button class="secondary-button" data-modal="settings-modal">⚙ Settings</button></div>
+        <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Home</h1><p class="muted">Welcome to studyTIME.</p></div><button class="secondary-button" data-modal="settings-modal">⚙ Settings</button></div>
         <div class="home-date-card card"><p class="eyebrow">Today</p><strong id="home-date"></strong><span id="home-time"></span></div>
       </section>
       <section id="student-profile-view" class="view-panel hidden">
