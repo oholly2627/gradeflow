@@ -60,7 +60,6 @@ function notify(message) { const toast = $("#toast"); toast.textContent = messag
 
 function render() {
   renderStudents();
-  renderAssignments();
   renderFilters();
   renderStudentSubjects();
   renderGradeClasses();
@@ -117,11 +116,6 @@ function openStudentProfile(student) {
   const score = average(student.id);
   $("#student-profile-content").innerHTML = `<p class="eyebrow">Student profile</p><div class="profile-heading"><div class="student-cell"><span class="student-avatar">${initials(student.name)}</span><div><h2>${student.name}</h2><p class="muted">${student.email || "No email added"}</p></div></div><button class="secondary-button" data-profile-edit="${student.id}">Edit profile</button></div><div class="profile-stats"><div><span class="stat-label">Average score</span><strong>${score === null ? "—" : `${score}%`}</strong></div><div><span class="stat-label">Assignments</span><strong>${grades.length}</strong></div></div><div class="profile-section"><h3>Classes</h3><p class="muted">${classes.join(", ") || "No classes assigned"}</p></div><div class="profile-section"><h3>Grades and scores</h3>${grades.length ? `<div class="profile-grades">${grades.map((grade) => `<div class="profile-grade"><div><strong>${grade.assignment}</strong><small>${grade.className || classes[0] || ""} · ${formatDate(grade.date)}</small></div><strong class="${grade.score < data.settings.passingGrade ? "warning" : ""}">${gradeLabel(grade)}</strong></div>`).join("")}</div>` : `<p class="muted">No grades recorded yet.</p>`}</div>`;
   $("#student-profile-modal").classList.remove("hidden");
-}
-function renderAssignments() {
-  const list = $("#assignments-list");
-  list.innerHTML = data.grades.slice().sort((a, b) => b.date.localeCompare(a.date)).map((grade) => { const student = studentById(grade.studentId); return `<div class="assignment-row"><div class="assignment-name">${grade.assignment}<small>${student?.name || "Unknown student"} · ${student?.className || ""}</small></div><div class="assignment-meta">${formatDate(grade.date)}</div><div class="assignment-score ${grade.score < data.settings.passingGrade ? "warning" : ""}">${gradeLabel(grade)}</div></div>`; }).join("");
-  list.classList.toggle("hidden", data.grades.length === 0); $("#assignments-empty").classList.toggle("hidden", data.grades.length > 0);
 }
 function openModal(id) { if (data.students.length === 0 && id === "grade-modal") { notify("Add a student before recording a grade."); return; } $(`#${id}`).classList.remove("hidden"); }
 function closeModal(modal) {
