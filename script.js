@@ -47,6 +47,20 @@ function buildSchedule(assignments) {
     const reading = assignment.match(/^(.*?\b(?:read|reading)\b.*?)(?:\s*\(?\s*(\d+)\s*pages?\s*\)?\s*)$/i);
     const title = reading?.[1].trim() || assignment;
     const pageCount = reading ? Number(reading[2]) : 0;
+    const lessonCount = Number(assignment.match(/(\d+)\s+lessons?/i)?.[1] || 0);
+    if (!reading && lessonCount > 1) {
+      const lessonsPerDay = Math.floor(lessonCount / days.length);
+      const extraLessons = lessonCount % days.length;
+      let completedLessons = 0;
+      return days.flatMap((day, dayIndex) => {
+        const count = lessonsPerDay + (dayIndex < extraLessons ? 1 : 0);
+        if (!count) return [];
+        const startLesson = completedLessons + 1;
+        const endLesson = completedLessons + count;
+        completedLessons = endLesson;
+        return [{ assignment: `${assignment} (lessons ${startLesson}-${endLesson})`, day }];
+      });
+    }
     if (pageCount <= 40) return [{ assignment, day: days[assignmentIndex % days.length] }];
     const pagesPerDay = Math.floor(pageCount / days.length);
     const extraPages = pageCount % days.length;
