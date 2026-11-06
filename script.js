@@ -46,6 +46,13 @@ function buildSchedule(assignments) {
   const lessonLines = assignments.filter((assignment) => /\blessons?\b/i.test(assignment) && !/\d+\s+lessons?/i.test(assignment));
   let lessonLineIndex = 0;
   return assignments.flatMap((assignment, assignmentIndex) => {
+    if (/\bwrite\s+(?:a\s+)?paper\b/i.test(assignment)) {
+      const startDay = assignmentIndex % (days.length - 1);
+      return [
+        { assignment: `${assignment} (rough draft)`, day: days[startDay] },
+        { assignment: `${assignment} (final draft)`, day: days[startDay + 1] }
+      ];
+    }
     if (lessonLines.length > 1 && lessonLines.includes(assignment)) {
       const dayIndex = Math.min(days.length - 1, Math.floor(lessonLineIndex * days.length / lessonLines.length));
       lessonLineIndex += 1;
@@ -150,7 +157,7 @@ function openStudentProfile(student) {
     ? buildSchedule(scheduleInput.split(/\r?\n/).map((assignment) => assignment.trim()).filter(Boolean))
     : (student.schedule || []);
   const days = ["Tuesday", "Wednesday", "Thursday", "Friday"];
-  $("#student-profile-page").innerHTML = `<div class="page-heading"><div><p class="eyebrow">Student profile</p><h1>${escapeHtml(student.name)}</h1><p class="muted">${escapeHtml(student.email || "No email added")}</p></div><button class="secondary-button" data-profile-edit="${student.id}">Edit profile</button></div><div class="card profile-section schedule-planner"><h2>Build a weekly schedule</h2><p class="muted">Input assignments one per line. For reading assignments, include the page count, such as “Read chapter 3 - 80 pages”; anything over 40 pages is split evenly across Tuesday through Friday.</p><form data-schedule-form="${student.id}"><label>Schedule input<textarea name="assignments" rows="7" placeholder="Read chapter 3 - 80 pages&#10;Finish science worksheet&#10;Practice vocabulary">${escapeHtml(scheduleInput)}</textarea></label><button class="primary-button" type="submit">Build weekly schedule</button></form></div><div class="card profile-section"><h2>Tuesday through Friday schedule</h2><p class="muted">Output generated from the schedule input above.</p>${schedule.length ? `<div class="schedule-grid">${days.map((day) => `<div class="schedule-day"><h3>${day}</h3><div class="schedule-items">${schedule.filter((item) => item.day === day).map((item) => `<div class="schedule-item">${escapeHtml(item.assignment)}</div>`).join("") || `<p class="muted">No assignments</p>`}</div></div>`).join("")}</div>` : `<p class="muted">No schedule yet. Add assignments above to create one.</p>`}</div>`;
+  $("#student-profile-page").innerHTML = `<div class="page-heading"><div><p class="eyebrow">Student profile</p><h1>${escapeHtml(student.name)}</h1><p class="muted">${escapeHtml(student.email || "No email added")}</p></div><button class="secondary-button" data-profile-edit="${student.id}">Edit profile</button></div><div class="card profile-section schedule-planner"><h2>Build a weekly schedule</h2><p class="muted">Input assignments one per line. Reading over 40 pages and multiple lessons are split evenly across Tuesday through Friday. “Write paper” creates a rough draft and final draft on two days.</p><form data-schedule-form="${student.id}"><label>Schedule input<textarea name="assignments" rows="7" placeholder="Read chapter 3 - 80 pages&#10;Complete 8 lessons&#10;Write paper">${escapeHtml(scheduleInput)}</textarea></label><button class="primary-button" type="submit">Build weekly schedule</button></form></div><div class="card profile-section"><h2>Tuesday through Friday schedule</h2><p class="muted">Output generated from the schedule input above.</p>${schedule.length ? `<div class="schedule-grid">${days.map((day) => `<div class="schedule-day"><h3>${day}</h3><div class="schedule-items">${schedule.filter((item) => item.day === day).map((item) => `<div class="schedule-item">${escapeHtml(item.assignment)}</div>`).join("") || `<p class="muted">No assignments</p>`}</div></div>`).join("")}</div>` : `<p class="muted">No schedule yet. Add assignments above to create one.</p>`}</div>`;
   $$(".view-panel").forEach((panel) => panel.classList.toggle("hidden", panel.id !== "student-profile-view"));
 }
 function openModal(id) {
