@@ -46,8 +46,8 @@ function buildSchedule(assignments) {
   const lessonLines = assignments.filter((assignment) => /\blessons?\b/i.test(assignment) && !/\d+\s+lessons?/i.test(assignment));
   let lessonLineIndex = 0;
   return assignments.flatMap((assignment, assignmentIndex) => {
-    if (/\bwrite\s+(?:a\s+)?paper\b/i.test(assignment)) {
-      const startDay = assignmentIndex % (days.length - 1);
+    if (/\b(?:write|writing)\s+(?:a|the)?\s*paper\b/i.test(assignment)) {
+      const startDay = Math.min(days.length - 2, assignmentIndex % (days.length - 1));
       return [
         { assignment: `${assignment} (rough draft)`, day: days[startDay] },
         { assignment: `${assignment} (final draft)`, day: days[startDay + 1] }
