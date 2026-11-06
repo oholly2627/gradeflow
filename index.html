@@ -27,7 +27,7 @@
           <span class="shield-icon">✦</span>
           <div><strong>Private by design</strong><small>Your data stays in this browser.</small></div>
         </div>
-        <button class="nav-item settings-button active" data-view="settings"><span class="nav-icon">⚙</span> Settings</button>
+        <button class="nav-item home-button active" data-view="home"><span class="nav-icon">⌂</span> Home</button>
       </div>
     </aside>
 
@@ -40,15 +40,12 @@
         </div>
       </header>
 
-      <section id="settings-view" class="view-panel">
-        <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Settings</h1><p class="muted">Customize your gradebook and manage your local data.</p></div></div>
-        <div class="settings-grid">
-          <article class="card settings-card"><div class="settings-title"><span class="stat-icon blue">◉</span><div><h2>Gradebook preferences</h2><p class="muted">Set defaults for this browser.</p></div></div><label class="setting-row">Passing grade <input id="passing-grade" type="number" min="0" max="100" step="1"></label><label class="setting-row">Teacher name <input id="teacher-name" type="text" maxlength="40"></label><button class="primary-button" id="save-settings">Save preferences</button></article>
-          <article class="card settings-card"><div class="settings-title"><span class="stat-icon purple">⇅</span><div><h2>Data management</h2><p class="muted">Back up or move your gradebook.</p></div></div><div class="setting-actions"><button class="secondary-button" id="export-settings">Download backup</button><label class="secondary-button file-button">Import backup<input id="import-file" type="file" accept="application/json"></label></div><button class="danger-button" id="clear-data">Clear all local data</button></article>
-        </div>
+      <section id="home-view" class="view-panel">
+        <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Home</h1><p class="muted">Welcome to GradeFlow.</p></div><button class="secondary-button" data-modal="settings-modal">⚙ Settings</button></div>
+        <div class="home-date-card card"><p class="eyebrow">Today</p><strong id="home-date"></strong><span id="home-time"></span></div>
       </section>
       <section id="student-profile-view" class="view-panel hidden">
-        <button class="text-button profile-back" data-view="settings">← Back to settings</button>
+        <button class="text-button profile-back" data-view="home">← Back to home</button>
         <div id="student-profile-page"></div>
       </section>
     </main>
@@ -56,6 +53,9 @@
 
   <div class="modal-backdrop hidden" id="student-modal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="student-modal-title"><button class="close-button" data-close>×</button><p class="eyebrow">Roster</p><h2 id="student-modal-title">Add a student</h2><p class="muted">Add a student, then assign classes from their profile.</p><form id="student-form"><label>Student name<input name="name" required placeholder="e.g. Jordan Lee"></label><button class="primary-button full" type="submit">Add student</button></form></div>
+  </div>
+  <div class="modal-backdrop hidden" id="settings-modal">
+    <div class="modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title"><button class="close-button" data-close>×</button><p class="eyebrow">Workspace</p><h2 id="settings-modal-title">Settings</h2><div class="settings-grid"><article class="settings-card"><div class="settings-title"><span class="stat-icon blue">◉</span><div><h2>Gradebook preferences</h2><p class="muted">Set defaults for this browser.</p></div></div><label class="setting-row">Passing grade <input id="passing-grade" type="number" min="0" max="100" step="1"></label><label class="setting-row">Teacher name <input id="teacher-name" type="text" maxlength="40"></label><label class="setting-row">Date <input id="display-date" type="date"></label><label class="setting-row">Time <input id="display-time" type="time"></label><button class="primary-button" id="save-settings">Save settings</button></article><article class="settings-card"><div class="settings-title"><span class="stat-icon purple">⇅</span><div><h2>Data management</h2><p class="muted">Back up or move your gradebook.</p></div></div><div class="setting-actions"><button class="secondary-button" id="export-settings">Download backup</button><label class="secondary-button file-button">Import backup<input id="import-file" type="file" accept="application/json"></label></div><button class="danger-button" id="clear-data">Clear all local data</button></article></div></div>
   </div>
   <div class="modal-backdrop hidden" id="edit-student-modal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-student-modal-title"><button class="close-button" data-close>×</button><p class="eyebrow">Roster</p><h2 id="edit-student-modal-title">Edit student</h2><p class="muted">Update the classes this student takes.</p><form id="edit-student-form"><input name="studentId" id="edit-student-id" type="hidden"><label>Student name<input name="name" id="edit-student-name" required></label><label>Email <span class="optional">(optional)</span><input name="email" id="edit-student-email" type="email"></label><fieldset class="class-checkboxes"><legend>Classes</legend><div id="edit-student-classes"></div></fieldset><button class="primary-button full" type="submit">Save changes</button></form></div>

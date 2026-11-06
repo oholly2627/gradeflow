@@ -1,6 +1,6 @@
 const STORAGE_KEY = "gradeflow-data-v2";
 const defaultData = {
-  settings: { passingGrade: 70, teacherName: "Alex" },
+  settings: { passingGrade: 70, teacherName: "Alex", displayDate: new Date().toISOString().slice(0, 10), displayTime: new Date().toTimeString().slice(0, 5) },
   subjects: [],
   students: [],
   grades: [],
@@ -14,6 +14,7 @@ function loadData() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved) return structuredClone(defaultData);
+    saved.settings = { ...defaultData.settings, ...(saved.settings || {}) };
     saved.students = (saved.students || []).map((student) => {
       const classes = [...new Set((student.classes || [student.className]).filter(Boolean))];
       return { ...student, classes, className: classes[0] || "" };
@@ -111,6 +112,10 @@ function render() {
   renderGradeStudents();
   $("#passing-grade").value = data.settings.passingGrade;
   $("#teacher-name").value = data.settings.teacherName;
+  $("#display-date").value = data.settings.displayDate;
+  $("#display-time").value = data.settings.displayTime;
+  $("#home-date").textContent = new Date(`${data.settings.displayDate}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  $("#home-time").textContent = data.settings.displayTime;
 }
 function renderSidebarStudents() {
   const list = $("#sidebar-students");
@@ -211,9 +216,9 @@ $("#grade-type").addEventListener("change", (event) => { const isLetter = event.
 $("#grade-class").addEventListener("change", renderGradeStudents);
 $("#grade-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const student = studentById(form.get("studentId")); if (!student || !(student.classes || [student.className]).includes(form.get("className"))) { notify("Choose a student from the selected class."); return; } const letter = form.get("gradeType") === "letter" ? form.get("letter") : null; const score = letter ? letterScores[letter] : Number(form.get("score")); const grade = { id: `g${Date.now()}`, studentId: student.id, className: form.get("className"), assignment: form.get("assignment").trim(), score, letter, maxPoints: Number(form.get("maxPoints")), date: new Date().toISOString().slice(0, 10) }; data.grades.push(grade); addActivity(`You recorded a grade for ${student.name}`, `${grade.className} · ${grade.assignment} · ${gradeLabel(grade)}`); saveData(); render(); closeModal($("#grade-modal")); notify("Grade saved."); });
 $("#export-settings").addEventListener("click", () => { download("gradeflow-backup.json", JSON.stringify(data, null, 2)); notify("Backup downloaded."); });
-$("#save-settings").addEventListener("click", () => { data.settings.passingGrade = Math.max(0, Math.min(100, Number($("#passing-grade").value) || 70)); data.settings.teacherName = $("#teacher-name").value.trim() || "Teacher"; saveData(); render(); notify("Preferences saved."); });
-$("#import-file").addEventListener("change", (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (!imported.students || !imported.grades) throw new Error("Invalid backup"); imported.subjects = [...new Set([...(imported.subjects || []), ...imported.students.map((student) => student.className).filter(Boolean)])]; data = imported; saveData(); render(); notify("Backup imported."); } catch { notify("That file is not a valid GradeFlow backup."); } }; reader.readAsText(file); });
-$("#clear-data").addEventListener("click", () => { if (confirm("Clear all students, grades, subjects, and activity from this browser?")) { data = { settings: { passingGrade: 70, teacherName: "Teacher" }, subjects: [], students: [], grades: [], activity: [] }; saveData(); render(); notify("Local gradebook cleared."); } });
+$("#save-settings").addEventListener("click", () => { data.settings.passingGrade = Math.max(0, Math.min(100, Number($("#passing-grade").value) || 70)); data.settings.teacherName = $("#teacher-name").value.trim() || "Teacher"; data.settings.displayDate = $("#display-date").value || new Date().toISOString().slice(0, 10); data.settings.displayTime = $("#display-time").value || "08:00"; saveData(); render(); closeModal($("#settings-modal")); notify("Settings saved."); });
+$("#import-file").addEventListener("change", (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (!imported.students || !imported.grades) throw new Error("Invalid backup"); imported.settings = { ...defaultData.settings, ...(imported.settings || {}) }; imported.subjects = [...new Set([...(imported.subjects || []), ...imported.students.map((student) => student.className).filter(Boolean)])]; data = imported; saveData(); render(); notify("Backup imported."); } catch { notify("That file is not a valid GradeFlow backup."); } }; reader.readAsText(file); });
+$("#clear-data").addEventListener("click", () => { if (confirm("Clear all students, grades, subjects, and activity from this browser?")) { data = structuredClone(defaultData); data.settings.teacherName = "Teacher"; saveData(); render(); notify("Local gradebook cleared."); } });
 document.addEventListener("click", (event) => { const modalButton = event.target.closest("[data-modal]"); if (modalButton) { openModal(modalButton.dataset.modal); return; } const profileButton = event.target.closest("[data-profile-student]"); if (profileButton) { const student = studentById(profileButton.dataset.profileStudent); if (student) openStudentProfile(student); return; } const editButton = event.target.closest("[data-profile-edit]"); if (editButton) { const student = studentById(editButton.dataset.profileEdit); if (!student) return; $("#edit-student-id").value = student.id; $("#edit-student-name").value = student.name; $("#edit-student-email").value = student.email || ""; $$("#edit-student-classes input").forEach((input) => { input.checked = (student.classes || [student.className]).includes(input.value); }); $("#edit-student-modal").classList.remove("hidden"); return; } });
 document.addEventListener("submit", (event) => { const scheduleForm = event.target.closest("[data-schedule-form]"); if (!scheduleForm) return; event.preventDefault(); const student = studentById(scheduleForm.dataset.scheduleForm); const assignments = String(new FormData(scheduleForm).get("assignments") || "").split(/\r?\n/).map((assignment) => assignment.trim()).filter(Boolean); if (!student) return; if (!assignments.length) { notify("Enter at least one assignment."); return; } student.scheduleInput = assignments.join("\n"); student.schedule = buildSchedule(assignments); saveData(); openStudentProfile(student); notify("Weekly schedule created."); });
 document.addEventListener("submit", (event) => { const resourceForm = event.target.closest("[data-resource-form]"); if (!resourceForm) return; event.preventDefault(); const form = new FormData(resourceForm); const student = studentById(resourceForm.dataset.resourceForm); const title = String(form.get("title") || "").trim(); const url = validWebsiteUrl(String(form.get("url") || "").trim()); if (!student) return; if (!title || !url) { notify("Enter a valid website name and URL."); return; } student.resources = student.resources || []; student.resources.push({ id: `r${Date.now()}`, title, url }); saveData(); openStudentProfile(student); notify("Resource added."); });
