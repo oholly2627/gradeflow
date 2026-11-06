@@ -50,9 +50,10 @@ function buildSchedule(assignments) {
     const lessonRange = assignment.match(/lessons?\s*(?:\(|:)?\s*(\d+)\s*-\s*(\d+)/i);
     const lessonsBeforeWord = assignment.match(/(\d+)\s+lessons?/i);
     const lessonsAfterWord = assignment.match(/lessons?\s*(?:count\s*)?(?:\(|:)?\s*(\d+)/i);
+    const individualLessons = assignment.match(/\blessons?\b/gi)?.length || 0;
     const lessonCount = lessonRange
       ? Math.abs(Number(lessonRange[2]) - Number(lessonRange[1])) + 1
-      : Number(lessonsBeforeWord?.[1] || lessonsAfterWord?.[1] || 0);
+      : Number(lessonsBeforeWord?.[1] || lessonsAfterWord?.[1] || individualLessons);
     if (!reading && lessonCount > 1) {
       const lessonsPerDay = Math.floor(lessonCount / days.length);
       const extraLessons = lessonCount % days.length;
