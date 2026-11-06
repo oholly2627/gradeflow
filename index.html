@@ -20,7 +20,6 @@
       <p class="sidebar-label">Workspace</p>
       <nav class="nav-list" aria-label="Main navigation">
         <button class="nav-item active" data-view="students"><span class="nav-icon">♙</span> Students</button>
-        <button class="nav-item" data-view="subjects"><span class="nav-icon">◈</span> Subjects</button>
         <button class="nav-item" data-view="assignments"><span class="nav-icon">✓</span> Assignments</button>
       </nav>
       <div class="sidebar-bottom">
@@ -53,11 +52,6 @@
         <div class="empty-state hidden card" id="assignments-empty"><span>✓</span><strong>No assignments yet</strong><p>Record your first grade to see it here.</p><button class="primary-button small" data-modal="grade-modal">Record grade</button></div>
       </section>
 
-      <section id="subjects-view" class="view-panel hidden">
-        <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Subjects</h1><p class="muted">Create subjects and organize students by class.</p></div><button class="primary-button" data-modal="subject-modal">＋ Add subject</button></div>
-        <div class="subject-grid" id="subjects-list"></div>
-        <div class="empty-state hidden card" id="subjects-empty"><span>◈</span><strong>No subjects yet</strong><p>Create a subject before adding students.</p><button class="primary-button small" data-modal="subject-modal">Add subject</button></div>
-      </section>
 
       <section id="settings-view" class="view-panel hidden">
         <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Settings</h1><p class="muted">Customize your gradebook and manage your local data.</p></div></div>
@@ -77,9 +71,6 @@
   </div>
   <div class="modal-backdrop hidden" id="student-profile-modal">
     <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="student-profile-title"><button class="close-button" data-close>×</button><div id="student-profile-content"></div></div>
-  </div>
-  <div class="modal-backdrop hidden" id="subject-modal">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="subject-modal-title"><button class="close-button" data-close>×</button><p class="eyebrow">Workspace</p><h2 id="subject-modal-title">Add a subject</h2><p class="muted">Create a subject that can be assigned to students.</p><form id="subject-form"><label>Subject name<input name="name" required placeholder="e.g. Algebra II"></label><button class="primary-button full" type="submit">Add subject</button></form></div>
   </div>
   <div class="modal-backdrop hidden" id="grade-modal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="grade-modal-title"><button class="close-button" data-close>×</button><p class="eyebrow">Gradebook</p><h2 id="grade-modal-title">Record a grade</h2><p class="muted">Add an assignment score for a student.</p><form id="grade-form"><label>Class / Subject<select name="className" id="grade-class" required></select></label><label>Student<select name="studentId" id="grade-student" required></select></label><label>Assignment name<input name="assignment" required placeholder="e.g. Chapter 3 quiz"></label><label>Grade type<select name="gradeType" id="grade-type"><option value="percent">Percentage</option><option value="letter">Letter grade</option></select></label><div class="form-row"><label id="percent-grade-field">Score (%)<input name="score" id="grade-score" type="number" min="0" max="100" required placeholder="92"></label><label id="letter-grade-field" class="hidden">Letter<select name="letter" id="grade-letter"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="F">F</option></select></label><label id="max-points-field">Max points<input name="maxPoints" id="max-points" type="number" min="1" value="100" required></label></div><button class="primary-button full" type="submit">Save grade</button></form></div>
