@@ -127,13 +127,20 @@ function closeModal(modal) {
   }
 }
 function addActivity(text, detail) { data.activity.unshift({ text, detail, date: new Date().toISOString().slice(0, 10) }); }
+function addStudent(name) {
+  const student = { id: `s${Date.now()}`, name, email: "", className: "", classes: [], createdAt: new Date().toISOString().slice(0, 10) };
+  data.students.push(student);
+  saveData();
+  renderSidebarStudents();
+  return student;
+}
 function download(filename, content) { const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([content], { type: "application/json" })); link.download = filename; link.click(); URL.revokeObjectURL(link.href); }
 function exportCsv() { const rows = [["Student", "Class", "Assignment", "Grade", "Date"]]; data.grades.forEach((grade) => { const student = studentById(grade.studentId); rows.push([student?.name || "", student?.className || "", grade.assignment, gradeLabel(grade), grade.date]); }); const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n"); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); link.download = "gradeflow-export.csv"; link.click(); URL.revokeObjectURL(link.href); notify("Gradebook exported."); }
 
 $$(".nav-item, [data-view]").forEach((button) => button.addEventListener("click", () => { const view = button.dataset.view; if (!view) return; $$(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.view === view)); $$(".view-panel").forEach((panel) => panel.classList.toggle("hidden", panel.id !== `${view}-view`)); }));
 $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeModal(button.closest(".modal-backdrop"))));
 $$(".modal-backdrop").forEach((backdrop) => backdrop.addEventListener("click", (event) => { if (event.target === backdrop) closeModal(backdrop); }));
-$("#student-form").addEventListener("submit", (event) => { event.preventDefault(); const name = String(new FormData(event.target).get("name") || "").trim(); if (!name) { notify("Enter a student name."); return; } const student = { id: `s${Date.now()}`, name, email: "", className: "", classes: [], createdAt: new Date().toISOString().slice(0, 10) }; data.students.push(student); saveData(); render(); closeModal($("#student-modal")); notify(`${student.name} added.`); });
+$("#student-form").addEventListener("submit", (event) => { event.preventDefault(); const name = String(new FormData(event.currentTarget).get("name") || "").trim(); if (!name) { notify("Enter a student name."); return; } const student = addStudent(name); render(); closeModal($("#student-modal")); notify(`${student.name} added.`); });
 $("#edit-student-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const student = studentById(form.get("studentId")); const classes = form.getAll("classes"); if (!student || !classes.length) { notify("Choose at least one class."); return; } student.name = String(form.get("name") || "").trim(); student.email = String(form.get("email") || "").trim(); student.classes = classes; student.className = classes[0]; saveData(); render(); closeModal($("#edit-student-modal")); openStudentProfile(student); notify(`${student.name} updated.`); });
 $("#grade-type").addEventListener("change", (event) => { const isLetter = event.target.value === "letter"; $("#percent-grade-field").classList.toggle("hidden", isLetter); $("#letter-grade-field").classList.toggle("hidden", !isLetter); $("#max-points-field").classList.toggle("hidden", isLetter); $("#grade-score").required = !isLetter; $("#grade-letter").required = isLetter; $("#max-points").required = !isLetter; });
 $("#grade-class").addEventListener("change", renderGradeStudents);
