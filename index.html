@@ -19,14 +19,13 @@
       </a>
       <p class="sidebar-label">Workspace</p>
       <nav class="nav-list" aria-label="Main navigation">
-        <button class="nav-item active" data-view="students"><span class="nav-icon">♙</span> Students</button>
       </nav>
       <div class="sidebar-bottom">
         <div class="privacy-note">
           <span class="shield-icon">✦</span>
           <div><strong>Private by design</strong><small>Your data stays in this browser.</small></div>
         </div>
-        <button class="nav-item settings-button" data-view="settings"><span class="nav-icon">⚙</span> Settings</button>
+        <button class="nav-item settings-button active" data-view="settings"><span class="nav-icon">⚙</span> Settings</button>
       </div>
     </aside>
 
@@ -39,15 +38,7 @@
         </div>
       </header>
 
-      <section id="students-view" class="view-panel">
-        <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Students</h1><p class="muted">Manage your roster and monitor individual progress.</p></div><button class="primary-button" data-modal="student-modal">＋ Add student</button></div>
-        <div class="toolbar"><div class="search-box"><span>⌕</span><input id="student-search" type="search" placeholder="Search students..."></div><select id="class-filter"><option value="all">All classes</option></select></div>
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>Student</th><th></th></tr></thead><tbody id="students-table"></tbody></table></div><div class="empty-state hidden" id="students-empty"><span>⌕</span><strong>No students found</strong><p>Try a different search or add a new student.</p></div></div>
-      </section>
-
-
-
-      <section id="settings-view" class="view-panel hidden">
+      <section id="settings-view" class="view-panel">
         <div class="page-heading"><div><p class="eyebrow">Workspace</p><h1>Settings</h1><p class="muted">Customize your gradebook and manage your local data.</p></div></div>
         <div class="settings-grid">
           <article class="card settings-card"><div class="settings-title"><span class="stat-icon blue">◉</span><div><h2>Gradebook preferences</h2><p class="muted">Set defaults for this browser.</p></div></div><label class="setting-row">Passing grade <input id="passing-grade" type="number" min="0" max="100" step="1"></label><label class="setting-row">Teacher name <input id="teacher-name" type="text" maxlength="40"></label><button class="primary-button" id="save-settings">Save preferences</button></article>
