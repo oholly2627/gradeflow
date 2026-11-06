@@ -43,26 +43,10 @@ function gradeLabel(grade) { return grade.letter || `${grade.score}%`; }
 function notify(message) { const toast = $("#toast"); toast.textContent = message; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2600); }
 
 function render() {
-  renderStudents();
-  renderFilters();
-  renderStudentSubjects();
   renderGradeClasses();
   renderGradeStudents();
   $("#passing-grade").value = data.settings.passingGrade;
   $("#teacher-name").value = data.settings.teacherName;
-}
-function renderStudents() {
-  const search = ($("#student-search")?.value || "").toLowerCase();
-  const classFilter = $("#class-filter")?.value || "all";
-  const students = data.students.filter((student) => `${student.name} ${student.email} ${(student.classes || [student.className]).join(" ")}`.toLowerCase().includes(search) && (classFilter === "all" || (student.classes || [student.className]).includes(classFilter)));
-  $("#students-table").innerHTML = students.map((student, index) => `<tr><td><button class="student-link" data-edit-student="${student.id}"><div class="student-cell"><span class="student-avatar ${index % 2 ? "alt" : ""}">${initials(student.name)}</span>${student.name}</div></button></td><td><button class="action-menu delete-student" data-id="${student.id}" title="Remove student">···</button></td></tr>`).join("");
-  $("#students-empty").classList.toggle("hidden", students.length > 0);
-}
-function renderFilters() {
-  const current = $("#class-filter").value;
-  const classes = [...new Set(data.students.flatMap((student) => student.classes || [student.className]).filter(Boolean))];
-  $("#class-filter").innerHTML = `<option value="all">All classes</option>${classes.map((name) => `<option value="${name}">${name}</option>`).join("")}`;
-  $("#class-filter").value = classes.includes(current) ? current : "all";
 }
 function renderPerformance() {
   const body = $("#performance-table");
@@ -81,6 +65,17 @@ function renderDistribution() {
 function renderActivity() {
   $("#activity-list").innerHTML = data.activity.slice(0, 5).map((item) => `<div class="activity-row"><span class="activity-badge">${item.text.includes("added") ? "♙" : "✓"}</span><div><p>${item.text}</p><small>${item.detail}</small></div><time>${formatDate(item.date)}</time></div>`).join("") || `<div class="empty-state">No activity yet.</div>`;
 }
+function renderStudents() {
+  const search = ($("#student-search")?.value || "").toLowerCase(); const classFilter = $("#class-filter")?.value || "all";
+  const students = data.students.filter((student) => `${student.name} ${student.email} ${(student.classes || [student.className]).join(" ")}`.toLowerCase().includes(search) && (classFilter === "all" || (student.classes || [student.className]).includes(classFilter)));
+  $("#students-table").innerHTML = students.map((student, index) => `<tr><td><button class="student-link" data-edit-student="${student.id}"><div class="student-cell"><span class="student-avatar ${index % 2 ? "alt" : ""}">${initials(student.name)}</span>${student.name}</div></button></td><td><button class="action-menu delete-student" data-id="${student.id}" title="Remove student">···</button></td></tr>`).join("");
+  $("#students-empty").classList.toggle("hidden", students.length > 0);
+}
+function renderFilters() {
+  const current = $("#class-filter").value; const classes = [...new Set(data.students.flatMap((student) => student.classes || [student.className]).filter(Boolean))];
+  $("#class-filter").innerHTML = `<option value="all">All classes</option>${classes.map((name) => `<option value="${name}">${name}</option>`).join("")}`;
+  $("#class-filter").value = classes.includes(current) ? current : "all";
+}
 function renderGradeClasses() {
   $("#grade-class").innerHTML = data.subjects.length
     ? data.subjects.map((subject) => `<option value="${subject}">${subject}</option>`).join("")
@@ -92,9 +87,6 @@ function renderGradeStudents() {
   $("#grade-student").innerHTML = students.length
     ? students.map((student) => `<option value="${student.id}">${student.name}</option>`).join("")
     : `<option value="">No students in this class</option>`;
-}
-function renderStudentSubjects() {
-  $("#edit-student-classes").innerHTML = data.subjects.map((subject) => `<label class="class-checkbox"><input type="checkbox" name="classes" value="${subject}"> ${subject}</label>`).join("") || `<span class="muted">No classes available.</span>`;
 }
 function renderStudentSubjects() {
   $("#edit-student-classes").innerHTML = data.subjects.map((subject) => `<label class="class-checkbox"><input type="checkbox" name="classes" value="${subject}"> ${subject}</label>`).join("") || `<span class="muted">Add a subject first.</span>`;
@@ -136,12 +128,9 @@ $$(".nav-item, [data-view]").forEach((button) => button.addEventListener("click"
 $$("[data-modal]").forEach((button) => button.addEventListener("click", () => openModal(button.dataset.modal)));
 $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeModal(button.closest(".modal-backdrop"))));
 $$(".modal-backdrop").forEach((backdrop) => backdrop.addEventListener("click", (event) => { if (event.target === backdrop) closeModal(backdrop); }));
-$("#student-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const name = String(form.get("name") || "").trim(); if (!name) { notify("Enter a student name."); return; } const student = { id: `s${Date.now()}`, name, email: "", className: "", classes: [], createdAt: new Date().toISOString().slice(0, 10) }; data.students.push(student); addActivity(`You added ${student.name} to your roster`, "No classes assigned"); saveData(); render(); closeModal($("#student-modal")); notify(`${student.name} added to your roster.`); });
-$("#edit-student-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const student = studentById(form.get("studentId")); const classes = form.getAll("classes"); if (!student || !classes.length) { notify("Choose at least one class."); return; } student.name = form.get("name").trim(); student.email = form.get("email").trim(); student.classes = classes; student.className = classes[0]; saveData(); render(); closeModal($("#edit-student-modal")); notify(`${student.name} updated.`); });
 $("#grade-type").addEventListener("change", (event) => { const isLetter = event.target.value === "letter"; $("#percent-grade-field").classList.toggle("hidden", isLetter); $("#letter-grade-field").classList.toggle("hidden", !isLetter); $("#max-points-field").classList.toggle("hidden", isLetter); $("#grade-score").required = !isLetter; $("#grade-letter").required = isLetter; $("#max-points").required = !isLetter; });
 $("#grade-class").addEventListener("change", renderGradeStudents);
 $("#grade-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.target); const student = studentById(form.get("studentId")); if (!student || !(student.classes || [student.className]).includes(form.get("className"))) { notify("Choose a student from the selected class."); return; } const letter = form.get("gradeType") === "letter" ? form.get("letter") : null; const score = letter ? letterScores[letter] : Number(form.get("score")); const grade = { id: `g${Date.now()}`, studentId: student.id, className: form.get("className"), assignment: form.get("assignment").trim(), score, letter, maxPoints: Number(form.get("maxPoints")), date: new Date().toISOString().slice(0, 10) }; data.grades.push(grade); addActivity(`You recorded a grade for ${student.name}`, `${grade.className} · ${grade.assignment} · ${gradeLabel(grade)}`); saveData(); render(); closeModal($("#grade-modal")); notify("Grade saved."); });
-$("#student-search").addEventListener("input", renderStudents); $("#class-filter").addEventListener("change", renderStudents);
 $("#export-settings").addEventListener("click", () => { download("gradeflow-backup.json", JSON.stringify(data, null, 2)); notify("Backup downloaded."); });
 $("#save-settings").addEventListener("click", () => { data.settings.passingGrade = Math.max(0, Math.min(100, Number($("#passing-grade").value) || 70)); data.settings.teacherName = $("#teacher-name").value.trim() || "Teacher"; saveData(); render(); notify("Preferences saved."); });
 $("#import-file").addEventListener("change", (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (!imported.students || !imported.grades) throw new Error("Invalid backup"); imported.subjects = [...new Set([...(imported.subjects || []), ...imported.students.map((student) => student.className).filter(Boolean)])]; data = imported; saveData(); render(); notify("Backup imported."); } catch { notify("That file is not a valid GradeFlow backup."); } }; reader.readAsText(file); });
