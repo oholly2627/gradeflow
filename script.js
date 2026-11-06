@@ -132,9 +132,11 @@ function renderStudentSubjects() {
   $("#edit-student-classes").innerHTML = data.subjects.map((subject) => `<label class="class-checkbox"><input type="checkbox" name="classes" value="${subject}"> ${subject}</label>`).join("") || `<span class="muted">Add a subject first.</span>`;
 }
 function openStudentProfile(student) {
-  const schedule = student.schedule || [];
-  const days = ["Tuesday", "Wednesday", "Thursday", "Friday"];
   const scheduleInput = student.scheduleInput || "";
+  const schedule = scheduleInput
+    ? buildSchedule(scheduleInput.split(/\r?\n/).map((assignment) => assignment.trim()).filter(Boolean))
+    : (student.schedule || []);
+  const days = ["Tuesday", "Wednesday", "Thursday", "Friday"];
   $("#student-profile-page").innerHTML = `<div class="page-heading"><div><p class="eyebrow">Student profile</p><h1>${escapeHtml(student.name)}</h1><p class="muted">${escapeHtml(student.email || "No email added")}</p></div><button class="secondary-button" data-profile-edit="${student.id}">Edit profile</button></div><div class="card profile-section schedule-planner"><h2>Build a weekly schedule</h2><p class="muted">Input assignments one per line. For reading assignments, include the page count, such as “Read chapter 3 - 80 pages”; anything over 40 pages is split evenly across Tuesday through Friday.</p><form data-schedule-form="${student.id}"><label>Schedule input<textarea name="assignments" rows="7" placeholder="Read chapter 3 - 80 pages&#10;Finish science worksheet&#10;Practice vocabulary">${escapeHtml(scheduleInput)}</textarea></label><button class="primary-button" type="submit">Build weekly schedule</button></form></div><div class="card profile-section"><h2>Tuesday through Friday schedule</h2><p class="muted">Output generated from the schedule input above.</p>${schedule.length ? `<div class="schedule-grid">${days.map((day) => `<div class="schedule-day"><h3>${day}</h3><div class="schedule-items">${schedule.filter((item) => item.day === day).map((item) => `<div class="schedule-item">${escapeHtml(item.assignment)}</div>`).join("") || `<p class="muted">No assignments</p>`}</div></div>`).join("")}</div>` : `<p class="muted">No schedule yet. Add assignments above to create one.</p>`}</div>`;
   $$(".view-panel").forEach((panel) => panel.classList.toggle("hidden", panel.id !== "student-profile-view"));
 }
